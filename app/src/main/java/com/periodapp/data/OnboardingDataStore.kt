@@ -113,6 +113,46 @@ class OnboardingDataStore(private val context: Context) {
         }
     }
 
+    /**
+     * Updates an existing period in history. If it was the last period, updates "last" keys too.
+     */
+    suspend fun updatePeriodInHistory(
+        oldStartMs: Long,
+        newStartMs: Long,
+        newEndMs: Long
+    ) {
+        context.dataStore.edit { prefs ->
+            val list = parseHistory(prefs[KEY_PERIOD_HISTORY] ?: "").toMutableList()
+            val idx = list.indexOfFirst { it.startMs == oldStartMs }
+            if (idx < 0) return@edit
+            val newRecord = PeriodRecord(newStartMs, newEndMs)
+            list[idx] = newRecord
+            prefs[KEY_PERIOD_HISTORY] = serializeHistory(list)
+            val last = list.lastOrNull()
+            if (last?.startMs == newStartMs) {
+                prefs[KEY_LAST_PERIOD_START_MS] = newStartMs
+                prefs[KEY_LAST_PERIOD_END_MS] = newEndMs
+                prefs[KEY_PERIOD_LENGTH_DAYS] = newRecord.periodLengthDays.toLong()
+            }
+        }
+    }
+
+    /**
+     * Removes a period from history by start timestamp. If it was the last period, updates "last" keys to the new last record.
+     */
+    suspend fun removePeriodFromHistory(startMs: Long) {
+        context.dataStore.edit { prefs ->
+            val list = parseHistory(prefs[KEY_PERIOD_HISTORY] ?: "").filter { it.startMs != startMs }
+            prefs[KEY_PERIOD_HISTORY] = serializeHistory(list)
+            val last = list.lastOrNull()
+            if (last != null) {
+                prefs[KEY_LAST_PERIOD_START_MS] = last.startMs
+                prefs[KEY_LAST_PERIOD_END_MS] = last.endMs
+                prefs[KEY_PERIOD_LENGTH_DAYS] = last.periodLengthDays.toLong()
+            }
+        }
+    }
+
     private fun parseHistory(s: String): List<PeriodRecord> {
         if (s.isBlank()) return emptyList()
         return s.lineSequence()
