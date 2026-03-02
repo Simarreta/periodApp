@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Period App</string>
+    <string name="notification_channel_period">Period reminders</string>
+    <string name="notification_channel_ovulation">Ovulation reminders</string>
+    <string name="notification_period_title">Period reminder</string>
+    <string name="notification_period_text">Your period might start today.</string>
+    <string name="notification_ovulation_title">Ovulation reminder</string>
+    <string name="notification_ovulation_text">Your ovulation window may start today.</string>
+    <string name="test_notifications_title">Test notifications</string>
+    <string name="test_notifications_hint">Tap to see how each reminder will look.</string>
+    <string name="test_notification_period">Show period reminder</string>
+    <string name="test_notification_ovulation">Show ovulation reminder</string>
 </resources>
