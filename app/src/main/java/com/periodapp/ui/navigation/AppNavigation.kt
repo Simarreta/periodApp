@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.flow.combine
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,10 +35,21 @@ fun AppNavigation() {
         startDestination = START_ROUTE
     ) {
         composable(START_ROUTE) {
-            val isComplete by dataStore.isOnboardingComplete.collectAsState(initial = false)
-            LaunchedEffect(isComplete) {
-                navController.navigate(if (isComplete) MAIN_ROUTE else WIZARD_ROUTE) {
-                    popUpTo(START_ROUTE) { inclusive = true }
+            val hasPeriodData by combine(
+                dataStore.isOnboardingComplete,
+                dataStore.getLastPeriodStartMs()
+            ) { isComplete, lastPeriodStartMs ->
+                isComplete || lastPeriodStartMs != null
+            }.collectAsState(initial = null)
+            LaunchedEffect(hasPeriodData) {
+                if (hasPeriodData == true) {
+                    navController.navigate(MAIN_ROUTE) {
+                        popUpTo(START_ROUTE) { inclusive = true }
+                    }
+                } else if (hasPeriodData == false) {
+                    navController.navigate(WIZARD_ROUTE) {
+                        popUpTo(START_ROUTE) { inclusive = true }
+                    }
                 }
             }
             Box(

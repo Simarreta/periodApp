@@ -1,6 +1,6 @@
 # Period App
 
-Android app (Kotlin) to track your period and estimate ovulation. Built with **Jetpack Compose**, **Material 3**, and **DataStore**.
+Android app (Kotlin) to track your period and estimate ovulation. Built with **Jetpack Compose**, **Material 3**, and **DataStore**. (v0.2.0)
 
 ## Setup
 
@@ -14,7 +14,7 @@ Android app (Kotlin) to track your period and estimate ovulation. Built with **J
 - **Step 2:** When did your last period end? (one question, date picker; end ≥ start)
 - **Step 3:** Summary with typical period length and “Get started”
 
-After completion, the app opens the main screen. On later launches you go straight to the main app.
+After completion, the app opens the main screen. **Data is saved on the device** (DataStore): period dates and last months’ history. If the user already has period dates recorded, the wizard is skipped and the app opens directly to the main screen.
 
 ## Stack
 
