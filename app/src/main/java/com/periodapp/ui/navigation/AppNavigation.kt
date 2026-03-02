@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.periodapp.data.OnboardingDataStore
+import com.periodapp.notification.NotificationScheduler
 import com.periodapp.ui.main.MainScreen
 import com.periodapp.ui.wizard.WizardScreen
 
@@ -72,6 +73,9 @@ fun AppNavigation() {
             )
         }
         composable(MAIN_ROUTE) {
+            LaunchedEffect(Unit) {
+                NotificationScheduler.schedule(context.applicationContext, dataStore)
+            }
             MainScreen(dataStore = dataStore)
         }
     }
