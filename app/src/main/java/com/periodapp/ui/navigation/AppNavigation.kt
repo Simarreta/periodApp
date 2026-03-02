@@ -60,7 +60,7 @@ fun AppNavigation() {
             )
         }
         composable(MAIN_ROUTE) {
-            MainScreen()
+            MainScreen(dataStore = dataStore)
         }
     }
 }
