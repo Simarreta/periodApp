@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val DEFAULT_CYCLE_DAYS = 28
+private const val DEFAULT_CYCLE_DAYS = 27
 private const val MS_PER_DAY = 24 * 60 * 60 * 1000L
 
 data class DashboardState(
@@ -29,9 +29,14 @@ class MainViewModel(private val dataStore: OnboardingDataStore) : ViewModel() {
         viewModelScope.launch {
             combine(
                 dataStore.getLastPeriodStartMs(),
-                dataStore.getPeriodLengthDays()
-            ) { lastStartMs, periodLengthDays ->
-                computeDashboard(lastStartMs, periodLengthDays ?: 5)
+                dataStore.getPeriodLengthDays(),
+                dataStore.getCycleLengthDays()
+            ) { lastStartMs, periodLengthDays, cycleLengthDays ->
+                computeDashboard(
+                    lastStartMs,
+                    periodLengthDays ?: 5,
+                    cycleLengthDays ?: DEFAULT_CYCLE_DAYS
+                )
             }.collect { result ->
                 _state.update {
                     it.copy(
@@ -45,12 +50,16 @@ class MainViewModel(private val dataStore: OnboardingDataStore) : ViewModel() {
         }
     }
 
-    private fun computeDashboard(lastPeriodStartMs: Long?, periodLengthDays: Int): DashboardResult {
+    private fun computeDashboard(
+        lastPeriodStartMs: Long?,
+        periodLengthDays: Int,
+        cycleLengthDays: Int
+    ): DashboardResult {
         if (lastPeriodStartMs == null) {
             return DashboardResult(daysUntil = null, progress = 0f, lastStartMs = null)
         }
         val now = System.currentTimeMillis()
-        val cycleMs = DEFAULT_CYCLE_DAYS * MS_PER_DAY
+        val cycleMs = cycleLengthDays * MS_PER_DAY
         var nextPeriodStartMs = lastPeriodStartMs
         while (nextPeriodStartMs <= now) {
             nextPeriodStartMs += cycleMs

@@ -3,30 +3,46 @@ package com.periodapp.ui.main
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.periodapp.data.OnboardingDataStore
+import com.periodapp.ui.navigation.CALENDAR_TAB
+import com.periodapp.ui.navigation.DASHBOARD_TAB
+import com.periodapp.ui.navigation.EDIT_TAB
 import com.periodapp.ui.theme.Rose200
 import com.periodapp.ui.theme.Rose300
 
@@ -36,6 +52,54 @@ fun MainScreen(dataStore: OnboardingDataStore?) {
         dataStore?.let { MainViewModel(it) } ?: return@remember null
     } ?: return
 
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf(
+        TabItem(DASHBOARD_TAB, "Dashboard", Icons.Default.Home),
+        TabItem(EDIT_TAB, "Edit", Icons.Default.Edit),
+        TabItem(CALENDAR_TAB, "Calendar", Icons.Default.Event)
+    )
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
+                tabs.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        label = { Text(item.label) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                }
+            }
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (selectedTab) {
+                0 -> DashboardContent(viewModel = viewModel)
+                1 -> dataStore?.let { EditCycleScreen(dataStore = it, viewModel = viewModel) }
+                2 -> PeriodCalendarScreen(dataStore = dataStore)
+            }
+        }
+    }
+}
+
+private data class TabItem(val route: String, val label: String, val icon: ImageVector)
+
+@Composable
+private fun DashboardContent(viewModel: MainViewModel) {
     val state by viewModel.state.collectAsState()
 
     Box(
